@@ -8,4 +8,5 @@ import lombok.experimental.Accessors;
 public class SignInView {
     private String accessToken;
     private String refreshToken;
+
 }
