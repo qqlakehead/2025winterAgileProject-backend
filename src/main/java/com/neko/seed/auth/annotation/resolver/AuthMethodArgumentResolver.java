@@ -6,6 +6,9 @@ import com.neko.seed.auth.exception.AuthException;
 import com.neko.seed.auth.exception.TokenException;
 import com.neko.seed.auth.exception.UnauthorizedException;
 import com.neko.seed.auth.service.TokenService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.MethodParameter;
 import org.springframework.web.bind.support.WebDataBinderFactory;
@@ -19,6 +22,7 @@ import org.springframework.web.method.support.ModelAndViewContainer;
  * @author Li Jinhui
  * @since 2018/12/7
  */
+@Slf4j
 public class AuthMethodArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Autowired
@@ -34,12 +38,14 @@ public class AuthMethodArgumentResolver implements HandlerMethodArgumentResolver
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
                                   NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         // 从Header取出AccessToken
-        String token = webRequest.getHeader("Access-Token");
+        String token = webRequest.getHeader("token");//Access-Token
         // 判断Token是否为空
         if (token != null && token != "") {
             try {
                 // 从Token中获取Id并捕获异常
-                return tokenService.parse(TokenSubject.ACCESS, token).getBody().get("id");
+                log.info("用户token:{}",token);
+                Jws<Claims> parse = tokenService.parse(TokenSubject.ACCESS.type(), token);
+                return parse.getBody().get("id");
             } catch (TokenException e) {
                 // Token失效，抛出认证异常
                 throw new AuthException();

@@ -6,7 +6,7 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class SignInView {
-    private String accessToken;
+    private String token;
     private String refreshToken;
 
 

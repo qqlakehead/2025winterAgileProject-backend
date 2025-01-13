@@ -1,27 +1,43 @@
 package com.neko.seed.user.controller;
 
 import com.neko.seed.auth.annotation.Auth;
+import com.neko.seed.auth.annotation.resolver.AuthMethodArgumentResolver;
 import com.neko.seed.base.entity.Result;
 import com.neko.seed.user.data.SignInData;
 import com.neko.seed.user.data.SignUpData;
 import com.neko.seed.user.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthMethodArgumentResolver tokenResolver;
+
     /**
      * 登陆接口
      */
-    @PostMapping("/signIn")
+    @PostMapping("/login")
     public Result signIn(@RequestBody @Validated SignInData data) {
         // 使用SpringValidation校验数据
         return new Result().success(userService.signIn(data));
+    }
+
+    /**
+     * 页面权限接口
+     */
+    @GetMapping("/permission")
+    public Result getPermission(@Auth(required = true) Object userId) {
+        log.info(String.valueOf(userId));
+        // 获取页面权限
+        return new Result().success(userService.getPermission(Long.valueOf(String.valueOf(userId))));
     }
 
     /**

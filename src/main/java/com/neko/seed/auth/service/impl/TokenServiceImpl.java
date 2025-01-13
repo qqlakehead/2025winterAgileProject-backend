@@ -3,12 +3,15 @@ package com.neko.seed.auth.service.impl;
 import com.neko.seed.auth.service.TokenService;
 import com.neko.seed.auth.exception.TokenException;
 import io.jsonwebtoken.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.security.KeyRep.Type.SECRET;
 
 /**
  * Token服务
@@ -18,6 +21,7 @@ import java.util.Map;
  * @update 2019/01/07 09:46
  **/
 @Service
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
     /**
@@ -29,7 +33,8 @@ public class TokenServiceImpl implements TokenService {
     /**
      * Token密钥
      **/
-    private static final String SECRECT = "YOUR SECRET + 64 BIT > OVJPIDSFWEcvoOIDF1-232''F]WE=F23=-4VXCNONSFIOEIWI023";
+    //private static final String SECRECT = "YOUR SECRET + 64 BIT > OVJPIDSFWEcvoOIDF1-232''F]WE=F23=-4VXCNONSFIOEIWI023";
+    private static final String SECRECT = "mysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkeymysupersecretkey";
 
     /**
      * 将密钥转换成byte数组
@@ -49,13 +54,7 @@ public class TokenServiceImpl implements TokenService {
         };
     }
 
-    /**
-     * 生成Token
-     **/
-    private String buildToken(Object subject, Map<String, Object> payload, int hours) {
-        return Jwts.builder().setClaims(payload).setSubject(subject.toString()).setExpiration(new Date(new Date().getTime() + (hours * 36000000)))
-                .signWith(SignatureAlgorithm.HS256, getSecret()).compact();
-    }
+
 
     /**
      * 生成Payload只带Id的Token，有效期为1个小时
@@ -90,13 +89,31 @@ public class TokenServiceImpl implements TokenService {
     }
 
     /**
+     * 生成Token
+     **/
+    private String buildToken(Object subject, Map<String, Object> payload, int hours) {
+
+        return Jwts.builder()
+                .setClaims(payload)
+                .setSubject(subject.toString())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(new Date().getTime() + (hours * 36000000)))
+                //.signWith(SignatureAlgorithm.HS256, getSecret())
+                .signWith(SignatureAlgorithm.HS256, SECRECT) // 签名算法和密钥
+                .compact();
+    }
+    /**
      * 格式化Token，返回一个Jws对象
      **/
     @Override
     public Jws<Claims> parse(Object subject, String token) {
         try {
-            return Jwts.parser().requireSubject(subject.toString()).setSigningKey(getSecret()).parseClaimsJws(token);
+            return Jwts.parser()
+                    .requireSubject(subject.toString())
+                    .setSigningKey(SECRECT)
+                    .parseClaimsJws(token);
         } catch (JwtException e) {
+            log.info(e.getMessage());
             throw new TokenException();
         }
     }

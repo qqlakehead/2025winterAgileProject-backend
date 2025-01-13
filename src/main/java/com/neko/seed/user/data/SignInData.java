@@ -9,7 +9,7 @@ import javax.validation.constraints.NotBlank;
 @Accessors(chain = true)
 public class SignInData {
     @NotBlank
-    private String name;
+    private String username;
     @NotBlank
     private String password;
 }
